@@ -32,25 +32,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
     
     async def receive(self, text_data):
-        logger.info(f'Mesaj alındı: {text_data}')
-        text_data_json = json.loads(text_data)
-        message_type = text_data_json.get('type', 'chat_message')
-        
-        if message_type == 'chat_message':
+        try:
+            logger.info(f'Mesaj alındı: {text_data}')
+            text_data_json = json.loads(text_data)
             message = text_data_json['message']
-            user = self.scope['user']
             
             # Save message to database
             saved_message = await self.save_message(message)
             logger.info(f'Mesaj veritabanına kaydedildi: {message}')
-            
-            # Prepare user data
-            user_data = {
-                'id': user.id,
-                'username': user.username,
-                'full_name': user.get_full_name(),
-                'avatar': user.userprofile.avatar.url if hasattr(user, 'userprofile') and user.userprofile.avatar else None
-            }
             
             # Send message to room group
             await self.channel_layer.group_send(
@@ -58,14 +47,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_message',
                     'message': message,
-                    'user': user_data,
+                    'sender_id': self.scope['user'].id,
+                    'sender_username': self.scope['user'].username,
+                    'sender_full_name': self.scope['user'].get_full_name(),
                     'timestamp': saved_message.timestamp.isoformat()
                 }
             )
-            logger.info(f'Mesaj gruba gönderildi: {message}, kullanıcı: {user_data}')
-        elif message_type == 'file_message':
-            # Handle file messages here
-            pass
+            logger.info(f'Mesaj gruba gönderildi: {message}')
+        except Exception as e:
+            logger.error(f'Mesaj işlenirken hata oluştu: {str(e)}')
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'Mesaj gönderilemedi.'
+            }))
     
     async def chat_message(self, event):
         try:
@@ -74,7 +68,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'type': 'chat_message',
                 'message': event['message'],
-                'user': event['user'],
+                'user': {
+                    'id': event['sender_id'],
+                    'username': event['sender_username'],
+                    'full_name': event['sender_full_name']
+                },
                 'timestamp': event['timestamp']
             }))
             logger.info('Mesaj başarıyla gönderildi')
@@ -86,7 +84,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room = ChatRoom.objects.get(name=self.room_name)
         return Message.objects.create(
             room=room,
-            user=self.scope['user'],
+            sender=self.scope['user'],
             content=message,
             timestamp=timezone.now()
         ) 

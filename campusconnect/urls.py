@@ -20,10 +20,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from chat import views
+from django.contrib.auth.models import User
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('chat.urls')),
-    # Django'nun varsayılan auth URL'lerini kaldırıyoruz
-    # path('accounts/', include('django.contrib.auth.urls')),
+    path('chatbot/', include('chatbot.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),  # Django'nun varsayılan auth URL'lerini ekliyoruz
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -8,8 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
+            --primary-color: #6a1b9a;    /* Koyu mor */
+            --secondary-color: #9c27b0;  /* Açık mor */
         }
         
         body {
@@ -61,6 +61,20 @@
             background-color: var(--secondary-color);
             border-color: var(--secondary-color);
             transform: translateY(-1px);
+        }
+
+        .card-header.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .alert-success {
+            background-color: #e1bee7;
+            border-color: #ce93d8;
+            color: #4a148c;
         }
         
         .chat-messages {
@@ -136,7 +150,7 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
+                            <a class="nav-link" href="/accounts/login/">
                                 <i class="fas fa-sign-in-alt me-1"></i>Login
                             </a>
                         </li>

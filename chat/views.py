@@ -20,13 +20,21 @@ def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Create user profile
-            UserProfile.objects.create(user=user)
-            messages.success(request, 'Registration successful! Please login.')
-            return redirect('login')
+            try:
+                user = form.save()
+                # Create user profile
+                UserProfile.objects.create(user=user)
+                messages.success(request, 'Registration successful! Please login.')
+                return redirect('login')
+            except Exception as e:
+                messages.error(request, f'An error occurred during registration: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = UserRegistrationForm()
+    
     return render(request, 'registration/register.html', {'form': form})
 
 @login_required
@@ -136,35 +144,3 @@ def follow_user(request, user_id):
     profile = request.user.userprofile
     profile.following.add(user_to_follow.userprofile)
     return redirect('user_list')
-
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        print(f"Giriş denemesi - Kullanıcı adı: {username}")  # Güvenlik için şifreyi loglamıyoruz
-        
-        # Manuel olarak kullanıcıyı doğrulayalım
-        user = authenticate(request, username=username, password=password)
-        print(f"Authenticate sonucu: {user}")
-        
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                print(f"Başarılı giriş: {username}")
-                messages.success(request, f'Hoş geldiniz, {username}!')
-                return redirect('home')
-            else:
-                print(f"Hesap aktif değil: {username}")
-                messages.error(request, 'Hesabınız aktif değil.')
-        else:
-            print(f"Kullanıcı doğrulanamadı: {username}")
-            messages.error(request, 'Geçersiz kullanıcı adı veya şifre.')
-            
-        # Form hatalarını görelim
-        form = AuthenticationForm(request, data=request.POST)
-        if not form.is_valid():
-            print(f"Form hataları: {form.errors}")
-    else:
-        form = AuthenticationForm()
-    
-    return render(request, 'registration/login.html', {'form': form})

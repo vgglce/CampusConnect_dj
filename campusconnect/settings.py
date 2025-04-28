@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "channels",
     "friendship",
+    "chatbot",
 ]
 
 MIDDLEWARE = [
@@ -85,12 +86,8 @@ WSGI_APPLICATION = "campusconnect.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'campusconnect',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',  # Docker compose service name
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -148,8 +145,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 ASGI_APPLICATION = "campusconnect.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }
 
 # Authentication backends
@@ -160,4 +160,4 @@ AUTHENTICATION_BACKENDS = [
 # Authentication settings
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
-LOGIN_URL = 'login'
+LOGIN_URL = '/accounts/login/'

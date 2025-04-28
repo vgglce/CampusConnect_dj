@@ -19,6 +19,7 @@ services:
     depends_on:
       - db
       - redis
+      - ollama  # <<< Bunu da ekliyoruz çünkü web app Ollama ile konuşacak!
 
   db:
     image: postgres:13
@@ -34,5 +35,14 @@ services:
     ports:
       - "6379:6379"
 
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: always
+
 volumes:
-  postgres_data: 
+  postgres_data:
+  ollama_data:
