@@ -14,4 +14,5 @@ urlpatterns = [
     path('accept-friend-request/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
     path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
     path('register/', views.register, name='register'),
+    path('join-room/<str:room_name>/', views.join_room, name='join_room'),
 ] 

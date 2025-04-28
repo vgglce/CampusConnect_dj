@@ -86,7 +86,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room = ChatRoom.objects.get(name=self.room_name)
         return Message.objects.create(
             room=room,
-            user=self.scope['user'],
+            sender=self.scope['user'],
             content=message,
             timestamp=timezone.now()
         ) 

@@ -11,10 +11,14 @@ from friendship.models import Friend, FriendshipRequest
 
 @login_required
 def home(request):
-    chat_rooms = ChatRoom.objects.filter(
+    user_chat_rooms = ChatRoom.objects.filter(
         Q(created_by=request.user) | Q(members=request.user)
     ).distinct()
-    return render(request, 'chat/home.html', {'chat_rooms': chat_rooms})
+    all_chat_rooms = ChatRoom.objects.all()
+    return render(request, 'chat/home.html', {
+        'chat_rooms': user_chat_rooms,
+        'all_chat_rooms': all_chat_rooms
+    })
 
 def register(request):
     if request.method == 'POST':
@@ -23,8 +27,13 @@ def register(request):
             user = form.save()
             # Create user profile
             UserProfile.objects.create(user=user)
-            messages.success(request, 'Registration successful! Please login.')
-            return redirect('login')
+            messages.success(request, 'Registration successful! You are now logged in.')
+            login(request, user)  # Kullanıcıyı otomatik giriş yaptır
+            return redirect('home')
+        else:
+            # Hataları sadece logla, kullanıcıya genel hata göster
+            print('Register form errors:', form.errors)
+            messages.error(request, 'Registration failed. Please check your information.')
     else:
         form = UserRegistrationForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -168,3 +177,12 @@ def login_view(request):
         form = AuthenticationForm()
     
     return render(request, 'registration/login.html', {'form': form})
+
+@login_required
+def join_room(request, room_name):
+    room = get_object_or_404(ChatRoom, name=room_name)
+    if request.method == 'POST':
+        room.members.add(request.user)
+        messages.success(request, f'You have joined the room "{room.name}"!')
+        return redirect('chat_room', room_name=room.name)
+    return redirect('home')
