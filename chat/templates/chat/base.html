@@ -237,6 +237,11 @@
             color: #fff;
             margin-left: auto;
         }
+
+        .ai-message .fa-spinner {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -319,8 +324,9 @@
         <div class="ai-assistant-messages" id="ai-assistant-messages">
             <div class="ai-message">Hello! I am your AI assistant. How can I help you today?</div>
         </div>
-        <form class="ai-assistant-input" id="ai-assistant-form" onsubmit="return false;">
-            <input type="text" id="ai-assistant-input" placeholder="Type your question..." autocomplete="off" />
+        <form class="ai-assistant-input" id="ai-assistant-form" method="POST" action="{% url 'chatbot:chat' %}">
+            {% csrf_token %}
+            <input type="text" id="ai-assistant-input" name="message" placeholder="Type your question..." autocomplete="off" required />
             <button type="submit"><i class="fas fa-paper-plane"></i></button>
         </form>
     </div>
@@ -329,28 +335,80 @@
         document.getElementById('ai-assistant-btn').onclick = function() {
             document.getElementById('ai-assistant-popup').classList.toggle('active');
         };
-        // Simple AI Assistant Frontend Logic (Demo)
-        document.getElementById('ai-assistant-form').onsubmit = function() {
+
+        // AI Assistant Form Submit
+        document.getElementById('ai-assistant-form').onsubmit = function(e) {
+            e.preventDefault();
+            const form = this;
             const input = document.getElementById('ai-assistant-input');
             const messages = document.getElementById('ai-assistant-messages');
             const userMsg = input.value.trim();
-            if (!userMsg) return false;
+            
+            if (!userMsg) {
+                return false;
+            }
+
             // User message
             const userDiv = document.createElement('div');
             userDiv.className = 'user-message';
             userDiv.textContent = userMsg;
             messages.appendChild(userDiv);
-            input.value = '';
-            // Scroll to bottom
+            
+            // Disable input and button while processing
+            input.disabled = true;
+            form.querySelector('button').disabled = true;
+            
+            // Show loading message
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'ai-message';
+            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+            messages.appendChild(loadingDiv);
             messages.scrollTop = messages.scrollHeight;
-            // Simulate AI response
-            setTimeout(() => {
+
+            // Send to server
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'message=' + encodeURIComponent(userMsg)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading message
+                messages.removeChild(loadingDiv);
+                
                 const aiDiv = document.createElement('div');
                 aiDiv.className = 'ai-message';
-                aiDiv.textContent = 'This is a demo AI response.';
+                aiDiv.textContent = data.response;
                 messages.appendChild(aiDiv);
                 messages.scrollTop = messages.scrollHeight;
-            }, 900);
+                
+                // Clear and enable input
+                input.value = '';
+                input.disabled = false;
+                form.querySelector('button').disabled = false;
+                input.focus();
+            })
+            .catch(error => {
+                // Remove loading message
+                messages.removeChild(loadingDiv);
+                
+                console.error('Error:', error);
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'ai-message';
+                aiDiv.textContent = 'Sorry, something went wrong. Please try again.';
+                messages.appendChild(aiDiv);
+                messages.scrollTop = messages.scrollHeight;
+                
+                // Enable input
+                input.disabled = false;
+                form.querySelector('button').disabled = false;
+                input.focus();
+            });
+
             return false;
         };
     </script>

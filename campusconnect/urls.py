@@ -25,6 +25,6 @@ from django.contrib.auth.models import User
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('chat.urls')),
-    path('chatbot/', include('chatbot.urls')),
+    path('chatbot/', include('chatbot.urls', namespace='chatbot')),
     path('accounts/', include('django.contrib.auth.urls')),  # Django'nun varsayılan auth URL'lerini ekliyoruz
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

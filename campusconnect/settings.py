@@ -48,9 +48,11 @@ INSTALLED_APPS = [
     "channels",
     "friendship",
     "chatbot",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -86,8 +88,12 @@ WSGI_APPLICATION = "campusconnect.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'campusconnect',
+        'USER': 'ovgulec',
+        'PASSWORD': '',  # Local development için şifre gerekmez
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -161,3 +167,33 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = '/accounts/login/'
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'chatbot': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+# CORS ayarları
+CORS_ALLOW_ALL_ORIGINS = True  # Geliştirme ortamı için
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
