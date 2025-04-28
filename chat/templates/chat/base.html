@@ -8,22 +8,25 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6a1b9a;    /* Koyu mor */
-            --secondary-color: #9c27b0;  /* Açık mor */
+            --primary-color: #6366f1;
+            --secondary-color: #2563eb;
+            --background-gradient: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
         }
         
         body {
-            background-color: #f8f9fa;
+            background: var(--background-gradient);
+            min-height: 100vh;
         }
         
         .navbar {
-            background-color: var(--primary-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
         }
         
         .navbar-brand {
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 1.7rem;
+            letter-spacing: 1px;
         }
         
         .nav-link {
@@ -38,29 +41,17 @@
         }
         
         .card {
+            border-radius: 18px;
+            box-shadow: 0 6px 24px rgba(30, 64, 175, 0.08);
             border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
         }
         
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            padding: 0.5rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-            transform: translateY(-1px);
+        .card-header {
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .card-header.bg-primary {
@@ -78,36 +69,173 @@
         }
         
         .chat-messages {
-            height: 400px;
-            overflow-y: auto;
-            padding: 1rem;
-            background-color: white;
-            border-radius: 10px;
+            background: #fff;
+            border-radius: 0 0 18px 18px;
+            padding: 1.5rem;
+            min-height: 400px;
         }
         
         .message {
-            margin-bottom: 1rem;
-            padding: 0.75rem 1rem;
-            border-radius: 15px;
-            max-width: 80%;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.04);
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            max-width: 75%;
+            transition: background 0.2s;
         }
         
         .message-sent {
-            background-color: var(--primary-color);
-            color: white;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
             margin-left: auto;
-            border-bottom-right-radius: 5px;
         }
         
         .message-received {
-            background-color: #e9ecef;
+            background: #f1f5f9;
+            color: #22223b;
             margin-right: auto;
-            border-bottom-left-radius: 5px;
         }
         
-        .alert {
-            border-radius: 10px;
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: transform 0.1s;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+        
+        /* AI Assistant Floating Button */
+        #ai-assistant-btn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 1050;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            box-shadow: 0 4px 16px rgba(30, 64, 175, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        
+        #ai-assistant-btn:hover {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            transform: scale(1.08);
+        }
+        
+        /* AI Assistant Popup */
+        #ai-assistant-popup {
+            display: none;
+            position: fixed;
+            bottom: 110px;
+            right: 32px;
+            width: 350px;
+            max-width: 95vw;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(30, 64, 175, 0.18);
+            z-index: 1100;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        
+        #ai-assistant-popup.active {
+            display: flex;
+        }
+        
+        .ai-assistant-header {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .ai-assistant-header .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .ai-assistant-messages {
+            padding: 1rem;
+            background: #f8fafc;
+            min-height: 180px;
+            max-height: 300px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .ai-assistant-input {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #f1f5f9;
+        }
+        
+        .ai-assistant-input input {
+            flex: 1;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+            padding: 0.5rem 1rem;
+        }
+        
+        .ai-assistant-input button {
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .ai-assistant-input button:hover {
+            background: var(--secondary-color);
+        }
+        
+        .ai-message, .user-message {
+            margin-bottom: 0.75rem;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 1rem;
+        }
+        
+        .ai-message {
+            background: #e0e7ff;
+            color: #22223b;
+            margin-right: auto;
+        }
+        
+        .user-message {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            margin-left: auto;
         }
     </style>
 </head>
@@ -174,6 +302,58 @@
         {% endblock %}
     </div>
 
+    <!-- AI Assistant Floating Button -->
+    <button id="ai-assistant-btn" title="AI Assistant">
+        <i class="fas fa-robot"></i>
+    </button>
+    <!-- AI Assistant Popup -->
+    <div id="ai-assistant-popup">
+        <div class="ai-assistant-header">
+            <div class="avatar"><i class="fas fa-robot"></i></div>
+            <div>
+                <strong>AI Assistant</strong><br>
+                <small>How can I help you?</small>
+            </div>
+            <button style="margin-left:auto;background:transparent;border:none;color:#fff;font-size:1.3rem;" onclick="document.getElementById('ai-assistant-popup').classList.remove('active')">&times;</button>
+        </div>
+        <div class="ai-assistant-messages" id="ai-assistant-messages">
+            <div class="ai-message">Hello! I am your AI assistant. How can I help you today?</div>
+        </div>
+        <form class="ai-assistant-input" id="ai-assistant-form" onsubmit="return false;">
+            <input type="text" id="ai-assistant-input" placeholder="Type your question..." autocomplete="off" />
+            <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+    <script>
+        // AI Assistant Popup Toggle
+        document.getElementById('ai-assistant-btn').onclick = function() {
+            document.getElementById('ai-assistant-popup').classList.toggle('active');
+        };
+        // Simple AI Assistant Frontend Logic (Demo)
+        document.getElementById('ai-assistant-form').onsubmit = function() {
+            const input = document.getElementById('ai-assistant-input');
+            const messages = document.getElementById('ai-assistant-messages');
+            const userMsg = input.value.trim();
+            if (!userMsg) return false;
+            // User message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-message';
+            userDiv.textContent = userMsg;
+            messages.appendChild(userDiv);
+            input.value = '';
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+            // Simulate AI response
+            setTimeout(() => {
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'ai-message';
+                aiDiv.textContent = 'This is a demo AI response.';
+                messages.appendChild(aiDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }, 900);
+            return false;
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
 </body>

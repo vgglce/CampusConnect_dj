@@ -43,7 +43,7 @@ ENV/
 Thumbs.db
 
 # Environment variables
-.env
+.env 
 
 # Docker
 .docker/

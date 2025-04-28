@@ -11,27 +11,29 @@ from friendship.models import Friend, FriendshipRequest
 
 @login_required
 def home(request):
-    chat_rooms = ChatRoom.objects.filter(
+    user_chat_rooms = ChatRoom.objects.filter(
         Q(created_by=request.user) | Q(members=request.user)
     ).distinct()
-    return render(request, 'chat/home.html', {'chat_rooms': chat_rooms})
+    all_chat_rooms = ChatRoom.objects.all()
+    return render(request, 'chat/home.html', {
+        'chat_rooms': user_chat_rooms,
+        'all_chat_rooms': all_chat_rooms
+    })
 
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            try:
-                user = form.save()
-                # Create user profile
-                UserProfile.objects.create(user=user)
-                messages.success(request, 'Registration successful! Please login.')
-                return redirect('login')
-            except Exception as e:
-                messages.error(request, f'An error occurred during registration: {str(e)}')
+            user = form.save()
+            # Create user profile
+            UserProfile.objects.create(user=user)
+            messages.success(request, 'Registration successful! You are now logged in.')
+            login(request, user)  # Kullanıcıyı otomatik giriş yaptır
+            return redirect('home')
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'{field}: {error}')
+            # Hataları sadece logla, kullanıcıya genel hata göster
+            print('Register form errors:', form.errors)
+            messages.error(request, 'Registration failed. Please check your information.')
     else:
         form = UserRegistrationForm()
     
@@ -144,3 +146,44 @@ def follow_user(request, user_id):
     profile = request.user.userprofile
     profile.following.add(user_to_follow.userprofile)
     return redirect('user_list')
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        print(f"Giriş denemesi - Kullanıcı adı: {username}")  # Güvenlik için şifreyi loglamıyoruz
+        
+        # Manuel olarak kullanıcıyı doğrulayalım
+        user = authenticate(request, username=username, password=password)
+        print(f"Authenticate sonucu: {user}")
+        
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                print(f"Başarılı giriş: {username}")
+                messages.success(request, f'Hoş geldiniz, {username}!')
+                return redirect('home')
+            else:
+                print(f"Hesap aktif değil: {username}")
+                messages.error(request, 'Hesabınız aktif değil.')
+        else:
+            print(f"Kullanıcı doğrulanamadı: {username}")
+            messages.error(request, 'Geçersiz kullanıcı adı veya şifre.')
+            
+        # Form hatalarını görelim
+        form = AuthenticationForm(request, data=request.POST)
+        if not form.is_valid():
+            print(f"Form hataları: {form.errors}")
+    else:
+        form = AuthenticationForm()
+    
+    return render(request, 'registration/login.html', {'form': form})
+
+@login_required
+def join_room(request, room_name):
+    room = get_object_or_404(ChatRoom, name=room_name)
+    if request.method == 'POST':
+        room.members.add(request.user)
+        messages.success(request, f'You have joined the room "{room.name}"!')
+        return redirect('chat_room', room_name=room.name)
+    return redirect('home')

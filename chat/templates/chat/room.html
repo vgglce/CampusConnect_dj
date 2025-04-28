@@ -60,6 +60,7 @@
 {% block extra_js %}
 <script>
     const roomName = "{{ room.name }}";
+    const currentUserId = "{{ request.user.id }}";
     const chatSocket = new WebSocket(
         'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
     );
@@ -91,8 +92,8 @@
         if (data.type === 'chat_message') {
             // Create message element
             const messageDiv = document.createElement('div');
-            const isCurrentUser = data.user.id === {{ request.user.id }};
-            console.log('Mesaj sahibi kontrol:', { isCurrentUser, userId: data.user.id, currentUserId: {{ request.user.id }} });
+            const isCurrentUser = String(data.user.id) === currentUserId;
+            console.log('Mesaj sahibi kontrol:', { isCurrentUser, userId: data.user.id, currentUserId });
             
             messageDiv.className = `message ${isCurrentUser ? 'message-sent' : 'message-received'} mb-3`;
             
