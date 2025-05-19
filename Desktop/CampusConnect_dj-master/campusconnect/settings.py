@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','127.0.0.1:65099']
 
 
 # Application definition
@@ -157,6 +157,13 @@ CHANNEL_LAYERS = {
         },
     },
 }
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:65099',
+]
+
+
+
+
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
