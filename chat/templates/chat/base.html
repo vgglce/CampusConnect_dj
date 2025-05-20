@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Campus Connect{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #2563eb;
+            --background-gradient: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+        }
+        
+        body {
+            background: var(--background-gradient);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.7rem;
+            letter-spacing: 1px;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        .card {
+            border-radius: 18px;
+            box-shadow: 0 6px 24px rgba(30, 64, 175, 0.08);
+            border: none;
+        }
+        
+        .card-header {
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .card-header.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .alert-success {
+            background-color: #e1bee7;
+            border-color: #ce93d8;
+            color: #4a148c;
+        }
+        
+        .chat-messages {
+            background: #fff;
+            border-radius: 0 0 18px 18px;
+            padding: 1.5rem;
+            min-height: 400px;
+        }
+        
+        .message {
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.04);
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            max-width: 75%;
+            transition: background 0.2s;
+        }
+        
+        .message-sent {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            margin-left: auto;
+        }
+        
+        .message-received {
+            background: #f1f5f9;
+            color: #22223b;
+            margin-right: auto;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: transform 0.1s;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+        
+        /* AI Assistant Floating Button */
+        #ai-assistant-btn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 1050;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            box-shadow: 0 4px 16px rgba(30, 64, 175, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        
+        #ai-assistant-btn:hover {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            transform: scale(1.08);
+        }
+        
+        /* AI Assistant Popup */
+        #ai-assistant-popup {
+            display: none;
+            position: fixed;
+            bottom: 110px;
+            right: 32px;
+            width: 350px;
+            max-width: 95vw;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(30, 64, 175, 0.18);
+            z-index: 1100;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        
+        #ai-assistant-popup.active {
+            display: flex;
+        }
+        
+        .ai-assistant-header {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .ai-assistant-header .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .ai-assistant-messages {
+            padding: 1rem;
+            background: #f8fafc;
+            min-height: 180px;
+            max-height: 300px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .ai-assistant-input {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #f1f5f9;
+        }
+        
+        .ai-assistant-input input {
+            flex: 1;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+            padding: 0.5rem 1rem;
+        }
+        
+        .ai-assistant-input button {
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .ai-assistant-input button:hover {
+            background: var(--secondary-color);
+        }
+        
+        .ai-message, .user-message {
+            margin-bottom: 0.75rem;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 1rem;
+        }
+        
+        .ai-message {
+            background: #e0e7ff;
+            color: #22223b;
+            margin-right: auto;
+        }
+        
+        .user-message {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            margin-left: auto;
+        }
+
+        .ai-message .fa-spinner {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-graduation-cap me-2"></i>Campus Connect
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">
+                                <i class="fas fa-comments me-1"></i>Chat Rooms
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_room' %}">
+                                <i class="fas fa-plus-circle me-1"></i>Create Room
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'user_list' %}">
+                                <i class="fas fa-users me-1"></i>Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">
+                                <i class="fas fa-user me-1"></i>Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/accounts/login/">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- AI Assistant Floating Button -->
+    <button id="ai-assistant-btn" title="AI Assistant">
+        <i class="fas fa-robot"></i>
+    </button>
+    <!-- AI Assistant Popup -->
+    <div id="ai-assistant-popup">
+        <div class="ai-assistant-header">
+            <div class="avatar"><i class="fas fa-robot"></i></div>
+            <div>
+                <strong>AI Assistant</strong><br>
+                <small>How can I help you?</small>
+            </div>
+            <button style="margin-left:auto;background:transparent;border:none;color:#fff;font-size:1.3rem;" onclick="document.getElementById('ai-assistant-popup').classList.remove('active')">&times;</button>
+        </div>
+        <div class="ai-assistant-messages" id="ai-assistant-messages">
+            <div class="ai-message">Hello! I am your AI assistant. How can I help you today?</div>
+        </div>
+        <form class="ai-assistant-input" id="ai-assistant-form" method="POST" action="{% url 'chatbot:chat' %}">
+            {% csrf_token %}
+            <input type="text" id="ai-assistant-input" name="message" placeholder="Type your question..." autocomplete="off" required />
+            <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+    <script>
+        // AI Assistant Popup Toggle
+        document.getElementById('ai-assistant-btn').onclick = function() {
+            document.getElementById('ai-assistant-popup').classList.toggle('active');
+        };
+
+        // AI Assistant Form Submit
+        document.getElementById('ai-assistant-form').onsubmit = function(e) {
+            e.preventDefault();
+            const form = this;
+            const input = document.getElementById('ai-assistant-input');
+            const messages = document.getElementById('ai-assistant-messages');
+            const userMsg = input.value.trim();
+            
+            if (!userMsg) {
+                return false;
+            }
+
+            // User message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-message';
+            userDiv.textContent = userMsg;
+            messages.appendChild(userDiv);
+            
+            // Disable input and button while processing
+            input.disabled = true;
+            form.querySelector('button').disabled = true;
+            
+            // Show loading message
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'ai-message';
+            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+            messages.appendChild(loadingDiv);
+            messages.scrollTop = messages.scrollHeight;
+
+            // Send to server
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'message=' + encodeURIComponent(userMsg)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading message
+                messages.removeChild(loadingDiv);
+                
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'ai-message';
+                aiDiv.textContent = data.response;
+                messages.appendChild(aiDiv);
+                messages.scrollTop = messages.scrollHeight;
+                
+                // Clear and enable input
+                input.value = '';
+                input.disabled = false;
+                form.querySelector('button').disabled = false;
+                input.focus();
+            })
+            .catch(error => {
+                // Remove loading message
+                messages.removeChild(loadingDiv);
+                
+                console.error('Error:', error);
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'ai-message';
+                aiDiv.textContent = 'Sorry, something went wrong. Please try again.';
+                messages.appendChild(aiDiv);
+                messages.scrollTop = messages.scrollHeight;
+                
+                // Enable input
+                input.disabled = false;
+                form.querySelector('button').disabled = false;
+                input.focus();
+            });
+
+            return false;
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
