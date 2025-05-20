@@ -12,89 +12,85 @@ OLLAMA_API_URL = 'http://localhost:11434/api/generate'
 
 def get_ollama_response(prompt):
     """Ollama API'ye istek gönder"""
-    enhanced_prompt = f"""Lütfen aşağıdaki mesaja Türkçe olarak, doğal ve akıcı bir dille yanıt ver. 
-    Cevabın samimi ve yardımsever olsun.
-    
+    enhanced_prompt = f"""Sen bir Türkçe asistan olarak görev yapıyorsun. Lütfen aşağıdaki kurallara dikkat ederek yanıt ver:
+
+    1. Düzgün ve akıcı Türkçe kullan
+    2. Devrik cümlelerden kaçın, düz cümle yapısı kullan
+    3. Günlük konuşma dilini kullan ama resmiyetten de uzak durma
+    4. Yanıtların kısa ve öz olsun
+    5. Her zaman nazik ve yardımsever ol
+    6. Türkçe dilbilgisi kurallarına uygun yaz
+    7. Noktalama işaretlerini doğru kullan
+    8. Yanıtlarında emoji kullanma
+    9. Her yanıtı yeni bir paragrafta başlat
+    10. Kullanıcıya "siz" diye hitap et
+    11. Yanıtlarınızı 1-2 cümle ile sınırla
+    12. Her yanıtınızda bir soru sorarak diyaloğu devam ettir
+    13. Yanıtlarınızda gereksiz tekrarlardan kaçının
+    14. Kullanıcının sorusunu tam olarak anladığınızdan emin olun
+    15. Eğer soruyu anlamadıysanız, açıklama isteyin
+    16. Yanıtlarınızda net ve kesin ifadeler kullanın
+    17. Kullanıcının seviyesine uygun bir dil kullanın
+    18. Her yanıtınızda bir öneri veya tavsiye içerik
+    19. Yanıtlarınızda örnekler verin
+    20. Kullanıcıyı motive edici bir dil kullanın
+
     Kullanıcı mesajı: {prompt}"""
     
     payload = {
         "model": "mistral",
         "prompt": enhanced_prompt,
         "stream": False,
-        "options": {
-            "temperature": 0.7,
-            "top_p": 0.9,
-            "num_ctx": 1024,
-            "stop": ["User:", "Kullanıcı:"],
-            "num_thread": 4
-        }
+        "temperature": 0.5,
+        "top_p": 0.8,
+        "max_tokens": 100
     }
     
-    logger.info(f"Sending request to Ollama with payload: {json.dumps(payload)}")
-    
-    response = requests.post(
-        OLLAMA_API_URL,
-        json=payload,
-        headers={
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        timeout=30
-    )
-    response.raise_for_status()
-    return response.json().get("response", "")
+    try:
+        response = requests.post(
+            OLLAMA_API_URL,
+            json=payload,
+            headers={
+                'Content-Type': 'application/json'
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            return response_data.get("response", "")
+        else:
+            logger.error(f"Ollama API returned status code: {response.status_code}")
+            return "Üzgünüm, şu anda yanıt veremiyorum. Lütfen daha sonra tekrar deneyin."
+
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        return "Üzgünüm, bir hata oluştu. Lütfen daha sonra tekrar deneyin."
 
 @login_required
 def chat_view(request):
     if request.method == 'POST':
         try:
-            # Log raw request data for debugging
-            logger.info(f"Request POST data: {request.POST}")
-            logger.info(f"Request body: {request.body.decode()}")
-            
-            user_message = request.POST.get('message', '')
-            user_message = user_message.strip()
-            
-            logger.info(f"Processed message: '{user_message}'")
+            user_message = request.POST.get('message', '').strip()
             
             if not user_message:
-                return JsonResponse({'response': "I didn't receive any message. What would you like to ask?"})
+                return JsonResponse({'response': "Mesaj alınamadı. Ne sormak istersiniz?"})
 
             # Kullanıcının mesajını kaydet
             ChatMessage.objects.create(user=request.user, role='user', message=user_message)
 
-            try:
-                # Ollama'ya istek gönder
-                bot_reply = get_ollama_response(user_message)
-                logger.info(f"Received response from Ollama: {bot_reply}")
-                
-                # Bot cevabını kaydet
-                ChatMessage.objects.create(user=request.user, role='bot', message=bot_reply)
+            # Ollama'ya istek gönder
+            bot_reply = get_ollama_response(user_message)
+            
+            # Bot cevabını kaydet
+            ChatMessage.objects.create(user=request.user, role='bot', message=bot_reply)
 
-                return JsonResponse({'response': bot_reply})
-
-            except requests.Timeout:
-                return JsonResponse(
-                    {'response': "I'm thinking a bit longer than usual. Could you try asking again, maybe with a shorter question?"},
-                    status=200
-                )
-            except requests.RequestException as e:
-                logger.error(f"Error connecting to Ollama: {str(e)}")
-                return JsonResponse(
-                    {'response': "I'm having trouble thinking right now. Could you try again in a moment?"},
-                    status=200
-                )
-            except Exception as e:
-                logger.error(f"Unexpected error: {str(e)}")
-                return JsonResponse(
-                    {'response': "Something unexpected happened. Could you try asking your question again?"},
-                    status=200
-                )
+            return JsonResponse({'response': bot_reply})
 
         except Exception as e:
             logger.error(f"View error: {str(e)}")
             return JsonResponse(
-                {'response': "I encountered an error. Please try again."},
+                {'response': "Üzgünüm, bir hata oluştu. Lütfen daha sonra tekrar deneyin."},
                 status=200
             )
 
