@@ -8,6 +8,8 @@ from .models import ChatRoom, Message, UserProfile
 from .forms import UserProfileForm, ChatRoomForm, UserRegistrationForm
 from django.db.models import Q
 from friendship.models import Friend, FriendshipRequest
+from django.utils import timezone
+from friendship.exceptions import AlreadyExistsError 
 
 @login_required
 def home(request):
@@ -40,8 +42,16 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 @login_required
+@login_required
 def profile(request):
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    profile, created = UserProfile.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'is_online': True,
+            'last_seen': timezone.now(),
+        }
+    )
+
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
@@ -52,6 +62,12 @@ def profile(request):
             return redirect('profile')
     else:
         form = UserProfileForm(instance=profile)
+
+    # Online durumunu güncelle
+    profile.is_online = True
+    profile.last_seen = timezone.now()
+    profile.save()
+
     return render(request, 'chat/profile.html', {
         'form': form,
         'profile': profile
@@ -131,7 +147,11 @@ def user_list(request):
 @login_required
 def send_friend_request(request, user_id):
     to_user = User.objects.get(id=user_id)
-    Friend.objects.add_friend(request.user, to_user)
+    try:
+        Friend.objects.add_friend(request.user, to_user)
+        messages.success(request, f'Friend request sent to {to_user.username}!')
+    except AlreadyExistsError:
+        messages.warning(request, f'Friend request already sent to {to_user.username} or you are already friends.')
     return redirect('user_list')
 
 @login_required

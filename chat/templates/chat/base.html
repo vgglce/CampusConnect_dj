@@ -113,135 +113,6 @@
             border-radius: 8px;
             border: 1px solid #e0e7ff;
         }
-        
-        /* AI Assistant Floating Button */
-        #ai-assistant-btn {
-            position: fixed;
-            bottom: 32px;
-            right: 32px;
-            z-index: 1050;
-            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 64px;
-            height: 64px;
-            box-shadow: 0 4px 16px rgba(30, 64, 175, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-        
-        #ai-assistant-btn:hover {
-            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-            transform: scale(1.08);
-        }
-        
-        /* AI Assistant Popup */
-        #ai-assistant-popup {
-            display: none;
-            position: fixed;
-            bottom: 110px;
-            right: 32px;
-            width: 350px;
-            max-width: 95vw;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 8px 32px rgba(30, 64, 175, 0.18);
-            z-index: 1100;
-            overflow: hidden;
-            flex-direction: column;
-        }
-        
-        #ai-assistant-popup.active {
-            display: flex;
-        }
-        
-        .ai-assistant-header {
-            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: #fff;
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .ai-assistant-header .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-        
-        .ai-assistant-messages {
-            padding: 1rem;
-            background: #f8fafc;
-            min-height: 180px;
-            max-height: 300px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .ai-assistant-input {
-            display: flex;
-            gap: 0.5rem;
-            padding: 1rem;
-            background: #f1f5f9;
-        }
-        
-        .ai-assistant-input input {
-            flex: 1;
-            border-radius: 8px;
-            border: 1px solid #e0e7ff;
-            padding: 0.5rem 1rem;
-        }
-        
-        .ai-assistant-input button {
-            border-radius: 8px;
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-        
-        .ai-assistant-input button:hover {
-            background: var(--secondary-color);
-        }
-        
-        .ai-message, .user-message {
-            margin-bottom: 0.75rem;
-            padding: 0.7rem 1rem;
-            border-radius: 12px;
-            max-width: 80%;
-            font-size: 1rem;
-        }
-        
-        .ai-message {
-            background: #e0e7ff;
-            color: #22223b;
-            margin-right: auto;
-        }
-        
-        .user-message {
-            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: #fff;
-            margin-left: auto;
-        }
-
-        .ai-message .fa-spinner {
-            margin-right: 8px;
-            color: var(--primary-color);
-        }
     </style>
 </head>
 <body>
@@ -277,7 +148,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">
+                            <a class="nav-link" href="/accounts/logout/">
                                 <i class="fas fa-sign-out-alt me-1"></i>Logout
                             </a>
                         </li>
@@ -293,126 +164,162 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
 
+{% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+    <div class="container mt-4">
         {% block content %}
         {% endblock %}
     </div>
 
-    <!-- AI Assistant Floating Button -->
-    <button id="ai-assistant-btn" title="AI Assistant">
-        <i class="fas fa-robot"></i>
+    <!-- Chatbot Button -->
+    <button class="btn btn-primary rounded-circle position-fixed" 
+            style="bottom: 20px; right: 20px; width: 60px; height: 60px; z-index: 1000;"
+            data-bs-toggle="modal" 
+            data-bs-target="#chatbotModal">
+        <i class="fas fa-robot fa-lg"></i>
     </button>
-    <!-- AI Assistant Popup -->
-    <div id="ai-assistant-popup">
-        <div class="ai-assistant-header">
-            <div class="avatar"><i class="fas fa-robot"></i></div>
-            <div>
-                <strong>AI Assistant</strong><br>
-                <small>How can I help you?</small>
+
+    <!-- Chatbot Modal -->
+    <div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="chatbotModalLabel">
+                        <i class="fas fa-robot me-2"></i>AI Assistant
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="chat-messages" id="chatbot-messages" style="height: 400px; overflow-y: auto; padding: 1rem;">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form id="chatbot-form" class="w-100">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" id="chatbot-input" class="form-control" placeholder="Type your message..." required>
+                            <button type="button" id="location-button" class="btn btn-outline-primary">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <button style="margin-left:auto;background:transparent;border:none;color:#fff;font-size:1.3rem;" onclick="document.getElementById('ai-assistant-popup').classList.remove('active')">&times;</button>
         </div>
-        <div class="ai-assistant-messages" id="ai-assistant-messages">
-            <div class="ai-message">Hello! I am your AI assistant. How can I help you today?</div>
-        </div>
-        <form class="ai-assistant-input" id="ai-assistant-form" method="POST" action="{% url 'chatbot:chat' %}">
-            {% csrf_token %}
-            <input type="text" id="ai-assistant-input" name="message" placeholder="Type your question..." autocomplete="off" required />
-            <button type="submit"><i class="fas fa-paper-plane"></i></button>
-        </form>
     </div>
-    <script>
-        // AI Assistant Popup Toggle
-        document.getElementById('ai-assistant-btn').onclick = function() {
-            document.getElementById('ai-assistant-popup').classList.toggle('active');
-        };
 
-        // AI Assistant Form Submit
-        document.getElementById('ai-assistant-form').onsubmit = function(e) {
-            e.preventDefault();
-            const form = this;
-            const input = document.getElementById('ai-assistant-input');
-            const messages = document.getElementById('ai-assistant-messages');
-            const userMsg = input.value.trim();
-            
-            if (!userMsg) {
-                return false;
-            }
-
-            // User message
-            const userDiv = document.createElement('div');
-            userDiv.className = 'user-message';
-            userDiv.textContent = userMsg;
-            messages.appendChild(userDiv);
-            
-            // Disable input and button while processing
-            input.disabled = true;
-            form.querySelector('button').disabled = true;
-            
-            // Show loading message
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'ai-message';
-            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
-            messages.appendChild(loadingDiv);
-            messages.scrollTop = messages.scrollHeight;
-
-            // Send to server
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: 'message=' + encodeURIComponent(userMsg)
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Remove loading message
-                messages.removeChild(loadingDiv);
-                
-                const aiDiv = document.createElement('div');
-                aiDiv.className = 'ai-message';
-                aiDiv.textContent = data.response;
-                messages.appendChild(aiDiv);
-                messages.scrollTop = messages.scrollHeight;
-                
-                // Clear and enable input
-                input.value = '';
-                input.disabled = false;
-                form.querySelector('button').disabled = false;
-                input.focus();
-            })
-            .catch(error => {
-                // Remove loading message
-                messages.removeChild(loadingDiv);
-                
-                console.error('Error:', error);
-                const aiDiv = document.createElement('div');
-                aiDiv.className = 'ai-message';
-                aiDiv.textContent = 'Sorry, something went wrong. Please try again.';
-                messages.appendChild(aiDiv);
-                messages.scrollTop = messages.scrollHeight;
-                
-                // Enable input
-                input.disabled = false;
-                form.querySelector('button').disabled = false;
-                input.focus();
-            });
-
-            return false;
-        };
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatbotForm = document.getElementById('chatbot-form');
+            const chatbotInput = document.getElementById('chatbot-input');
+            const chatbotMessages = document.getElementById('chatbot-messages');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Load initial messages
+            fetch('/chatbot/')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const messages = doc.querySelectorAll('.message');
+                    messages.forEach(message => {
+                        chatbotMessages.appendChild(message.cloneNode(true));
+                    });
+                    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+                });
+
+            chatbotForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const message = chatbotInput.value.trim();
+                if (!message) return;
+
+                // Add user message to chat
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'message user-message mb-3';
+                userMessageDiv.innerHTML = `
+                    <div class="message-content p-3 rounded">
+                        <strong>User:</strong>
+                        <p class="mb-0">${message}</p>
+                        <small class="text-muted">${new Date().toLocaleTimeString()}</small>
+                    </div>
+                `;
+                chatbotMessages.appendChild(userMessageDiv);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+                // Send message to server
+                fetch('/chatbot/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: `message=${encodeURIComponent(message)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Add bot response to chat
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message bot-message mb-3';
+                    botMessageDiv.innerHTML = `
+                        <div class="message-content p-3 rounded">
+                            <strong>Bot:</strong>
+                            <p class="mb-0">${data.response}</p>
+                            <small class="text-muted">${new Date().toLocaleTimeString()}</small>
+                        </div>
+                    `;
+                    chatbotMessages.appendChild(botMessageDiv);
+                    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while sending the message.');
+                });
+
+                chatbotInput.value = '';
+            });
+        });
+    </script>
+
+    <style>
+        .user-message .message-content {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: 20%;
+        }
+        .bot-message .message-content {
+            background-color: #f8f9fa;
+            margin-right: 20%;
+        }
+        .message-content {
+            border-radius: 15px;
+        }
+        #chatbotModal .modal-content {
+            border-radius: 15px;
+        }
+        #chatbotModal .modal-header {
+            border-radius: 15px 15px 0 0;
+        }
+        #chatbotModal .modal-footer {
+            border-radius: 0 0 15px 15px;
+        }
+    </style>
 </body>
 </html> 

@@ -86,5 +86,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room=room,
             sender=self.scope['user'],
             content=message,
-            timestamp=timezone.now()
+            timestamp=timezone.now(),
+            is_read=False
         ) 
