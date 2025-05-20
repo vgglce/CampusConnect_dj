@@ -18,7 +18,6 @@ class Message(models.Model):
     content = models.TextField()
     image = models.ImageField(upload_to='chat_images/', null=True, blank=True)
     timestamp = models.DateTimeField(default=timezone.now)
-    is_read = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['timestamp']
@@ -31,6 +30,12 @@ class UserProfile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
+
+
 
     def __str__(self):
         return self.user.username

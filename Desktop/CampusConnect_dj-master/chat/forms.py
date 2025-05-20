@@ -53,10 +53,12 @@ class UserRegistrationForm(UserCreationForm):
 
 class UserProfileForm(forms.ModelForm):
     bio = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), required=False)
+    location = forms.CharField(max_length=100, required=False)
+    birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     
     class Meta:
         model = UserProfile
-        fields = ['avatar', 'bio']
+        fields = ['avatar', 'bio', 'location', 'birth_date']
 
 class ChatRoomForm(forms.ModelForm):
     name = forms.CharField(
