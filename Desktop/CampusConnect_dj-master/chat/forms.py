@@ -67,14 +67,23 @@ class ChatRoomForm(forms.ModelForm):
             'placeholder': 'Enter room name'
         })
     )
-    
+
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Write a short description...',
+            'rows': 3
+        }),
+        required=False
+    )
+
     is_private = forms.BooleanField(
         required=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'form-check-input'
         })
     )
-    
+
     members = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
         required=False,
@@ -85,7 +94,7 @@ class ChatRoomForm(forms.ModelForm):
 
     class Meta:
         model = ChatRoom
-        fields = ['name', 'is_private', 'members']
+        fields = ['name', 'description', 'is_private', 'members']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -97,4 +106,4 @@ class ChatRoomForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         if ChatRoom.objects.filter(name=name).exists():
             raise forms.ValidationError('A room with this name already exists.')
-        return name 
+        return name
