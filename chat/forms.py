@@ -53,10 +53,12 @@ class UserRegistrationForm(UserCreationForm):
 
 class UserProfileForm(forms.ModelForm):
     bio = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), required=False)
+    location = forms.CharField(max_length=100, required=False)
+    birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     
     class Meta:
         model = UserProfile
-        fields = ['avatar', 'bio']
+        fields = ['avatar', 'bio', 'location', 'birth_date']
 
 class ChatRoomForm(forms.ModelForm):
     name = forms.CharField(
@@ -65,14 +67,23 @@ class ChatRoomForm(forms.ModelForm):
             'placeholder': 'Enter room name'
         })
     )
-    
+
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Write a short description...',
+            'rows': 3
+        }),
+        required=False
+    )
+
     is_private = forms.BooleanField(
         required=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'form-check-input'
         })
     )
-    
+
     members = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
         required=False,
@@ -83,7 +94,7 @@ class ChatRoomForm(forms.ModelForm):
 
     class Meta:
         model = ChatRoom
-        fields = ['name', 'is_private', 'members']
+        fields = ['name', 'description', 'is_private', 'members']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -95,4 +106,4 @@ class ChatRoomForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         if ChatRoom.objects.filter(name=name).exists():
             raise forms.ValidationError('A room with this name already exists.')
-        return name 
+        return name
