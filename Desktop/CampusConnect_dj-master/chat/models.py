@@ -40,6 +40,15 @@ class UserProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     is_online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
+    description = models.TextField(max_length=500, blank=True)
+    university = models.CharField(max_length=100, blank=True)
+    department = models.CharField(max_length=100, blank=True)
+    birthplace = models.CharField(max_length=100, blank=True)
+    favorite_band = models.CharField(max_length=100, blank=True)
+    gender = models.CharField(max_length=20, blank=True)
+    zodiac_sign = models.CharField(max_length=50, blank=True)
+
 
 
 

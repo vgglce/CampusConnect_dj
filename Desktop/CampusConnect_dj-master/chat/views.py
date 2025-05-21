@@ -44,34 +44,27 @@ def register(request):
 @login_required
 @login_required
 def profile(request):
-    profile, created = UserProfile.objects.get_or_create(
-        user=request.user,
-        defaults={
-            'is_online': True,
-            'last_seen': timezone.now(),
-        }
-    )
+    profile = request.user.userprofile
 
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            profile = form.save(commit=False)
-            profile.user = request.user
-            profile.save()
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('profile')
-    else:
-        form = UserProfileForm(instance=profile)
+        profile.birth_date = request.POST.get('birth_date')
+        profile.description = request.POST.get('description')
+        profile.university = request.POST.get('university')
+        profile.department = request.POST.get('department')
+        profile.birthplace = request.POST.get('birthplace')
+        profile.favorite_band = request.POST.get('favorite_band')
+        profile.gender = request.POST.get('gender')
+        profile.zodiac_sign = request.POST.get('zodiac_sign')
 
-    # Online durumunu güncelle
-    profile.is_online = True
-    profile.last_seen = timezone.now()
-    profile.save()
+        if 'profile_photo' in request.FILES:
+            profile.profile_photo = request.FILES['profile_photo']
 
-    return render(request, 'chat/profile.html', {
-        'form': form,
-        'profile': profile
-    })
+        profile.save()
+        messages.success(request, 'Profil başarıyla güncellendi.')
+        return redirect('profile')
+
+    return render(request, 'chat/profile.html')
+
 
 @login_required
 def chat_room(request, room_name):

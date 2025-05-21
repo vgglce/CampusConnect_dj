@@ -1,119 +1,101 @@
 {% extends 'chat/base.html' %}
+{% load static %}
 
 {% block title %}Profile - Campus Connect{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-user me-2"></i>Profile</h4>
-            </div>
-            <div class="card-body text-center">
-                {% if profile.avatar %}
-                    <img src="{{ profile.avatar.url }}" alt="Profile Picture" class="rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                {% else %}
-                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
-                        <i class="fas fa-user fa-4x text-white"></i>
-                    </div>
-                {% endif %}
-                <h5 class="card-title">{{ user.get_full_name }}</h5>
-                <p class="text-muted">@{{ user.username }}</p>
-                <p class="card-text">
-                    {% if profile.bio %}
-                        {{ profile.bio }}
-                    {% else %}
-                        <span class="text-muted">No bio added yet.</span>
-                    {% endif %}
-                </p>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Profil Bilgileri</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="text-center mb-4">
+                            {% if user.userprofile.profile_photo %}
+                                <img src="{{ user.userprofile.profile_photo.url }}" alt="Profile Photo" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% endif %}
+                        </div>
 
-                {% if profile.location %}
-                    <p class="card-text">
-                        <i class="fas fa-map-marker-alt me-2"></i>
-                        {{ profile.location }}
-                    </p>
-                {% endif %}
+                        <div class="mb-3">
+                            <label for="profile_photo" class="form-label">Profil Fotoğrafı</label>
+                            <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept="image/*">
+                        </div>
 
-                {% if profile.birth_date %}
-                    <p class="card-text">
-                        <i class="fas fa-birthday-cake me-2"></i>
-                        {{ profile.birth_date|date:"F j, Y" }}
-                    </p>
-                {% endif %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" readonly>
+                        </div>
 
-                <p class="card-text">
-                    <i class="fas fa-circle me-2 {% if profile.is_online %}text-success{% else %}text-secondary{% endif %}"></i>
-                    {% if profile.is_online %}
-                        Online
-                    {% else %}
-                        {% if profile.last_seen %}
-                            Last seen {{ profile.last_seen|timesince }} ago
-                        {% else %}
-                            Offline
-                        {% endif %}
-                    {% endif %}
-                </p>
-            </div>
-            <div class="card-footer bg-light">
-                <div class="row text-center">
-                    <div class="col">
-                        <h6 class="mb-0">{{ user.chat_rooms.count }}</h6>
-                        <small class="text-muted">Rooms</small>
-                    </div>
-                    <div class="col">
-                        <h6 class="mb-0">{{ user.userprofile.following.count }}</h6>
-                        <small class="text-muted">Following</small>
-                    </div>
-                    <div class="col">
-                        <h6 class="mb-0">{{ user.userprofile.followers.count }}</h6>
-                        <small class="text-muted">Followers</small>
-                    </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="birth_date" class="form-label">Doğum Tarihi</label>
+                            <input 
+                                type="date" 
+                                class="form-control" 
+                                id="birth_date" 
+                                name="birth_date" 
+                                value="{{ user.userprofile.birth_date|date:'Y-m-d' }}" 
+                                lang="en" 
+                                pattern="\d{4}-\d{2}-\d{2}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="university" class="form-label">Üniversite</label>
+                            <input type="text" class="form-control" id="university" name="university" value="{{ user.userprofile.university }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Bölüm</label>
+                            <input type="text" class="form-control" id="department" name="department" value="{{ user.userprofile.department }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="birthplace" class="form-label">Doğduğu Şehir</label>
+                            <input type="text" class="form-control" id="birthplace" name="birthplace" value="{{ user.userprofile.birthplace }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="favorite_band" class="form-label">En Sevdiği Grup</label>
+                            <input type="text" class="form-control" id="favorite_band" name="favorite_band" value="{{ user.userprofile.favorite_band }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="gender" class="form-label">Cinsiyet</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="Kadın" {% if user.userprofile.gender == "Kadın" %}selected{% endif %}>Kadın</option>
+                                <option value="Erkek" {% if user.userprofile.gender == "Erkek" %}selected{% endif %}>Erkek</option>
+                                <option value="Diğer" {% if user.userprofile.gender == "Diğer" %}selected{% endif %}>Diğer</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="zodiac_sign" class="form-label">Burç</label>
+                            <input type="text" class="form-control" id="zodiac_sign" name="zodiac_sign" value="{{ user.userprofile.zodiac_sign }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Hakkımda</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ user.userprofile.description }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profile</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.avatar.id_for_label }}" class="form-label">Profile Picture</label>
-                        {{ form.avatar.errors }}
-                        <input type="file" name="{{ form.avatar.name }}" class="form-control" id="{{ form.avatar.id_for_label }}" accept="image/*">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
-                        {{ form.bio.errors }}
-                        <textarea name="{{ form.bio.name }}" class="form-control" id="{{ form.bio.id_for_label }}" rows="4">{{ form.bio.value|default:'' }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
-                        {{ form.location.errors }}
-                        <input type="text" name="{{ form.location.name }}" class="form-control" id="{{ form.location.id_for_label }}" value="{{ form.location.value|default:'' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.birth_date.id_for_label }}" class="form-label">Birth Date</label>
-                        {{ form.birth_date.errors }}
-                        <input type="date" name="{{ form.birth_date.name }}" class="form-control" id="{{ form.birth_date.id_for_label }}" value="{{ form.birth_date.value|date:'Y-m-d'|default:'' }}">
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Save Changes
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
-{% endblock %} 
+{% endblock %}
